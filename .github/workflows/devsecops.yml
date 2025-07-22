@@ -1,4 +1,4 @@
-name: DevSecOps CI/CD
+ame: DevSecOps CI/CD
 
 on:
   push:
@@ -31,7 +31,7 @@ jobs:
       - name: Build Docker image
         run: docker build -t suchitaa/flask-app:latest .
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@main
+        uses: aquasecurity/trivy-action@v0.11.2
         with:
           image-ref: suchitaa/flask-app:latest
       - name: Push Docker image
