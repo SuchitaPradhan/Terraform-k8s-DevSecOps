@@ -1,4 +1,4 @@
-ame: DevSecOps CI/CD
+name: DevSecOps CI/CD
 
 on:
   push:
