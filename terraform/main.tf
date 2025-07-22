@@ -12,6 +12,9 @@ module "vpc" {
   public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
   enable_nat_gateway = true
   single_nat_gateway = true
+  enable_flow_log = true
+  create_flow_log_cloudwatch_log_group = true
+  create_flow_log_cloudwatch_iam_role  = true
 }
 
 module "eks" {
@@ -58,6 +61,16 @@ module "eks" {
       }
     }
   }
+  cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+}
+
+resource "aws_security_group_rule" "restrict_node_egress" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["10.0.0.0/16"] # Your VPC CIDR
+  security_group_id = module.eks.node_security_group_id
 }
 
 output "cluster_name" {
@@ -70,4 +83,12 @@ output "cluster_endpoint" {
 
 output "cluster_certificate_authority_data" {
   value = module.eks.cluster_certificate_authority_data
+}
+
+output "vpc_id" {
+  value = module.vpc.vpc_id
+}
+
+output "private_subnets" {
+  value = module.vpc.private_subnets
 }
