@@ -55,7 +55,7 @@ jobs:
 
       # Apply all SealedSecrets in the directory
       - name: Apply SealedSecrets
-        run: kubectl apply -f k8s/sealed-secrets/
+        run: kubectl apply -f k8s/sealed-secrets/ --validate=false
 
       # Deploy workloads
       - name: Deploy to Kubernetes
