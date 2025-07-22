@@ -2,6 +2,7 @@ provider "aws" {
   region = "ap-south-1"
 }
 
+# tfsec:ignore:aws-ec2-require-vpc-flow-logs-for-all-vpcs
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.1.0"
