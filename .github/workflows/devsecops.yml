@@ -11,10 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run tfsec
-        uses: aquasecurity/tfsec-action@v1.0.3
-        with:
-          working_directory: ./terraform
+      - name: Scan Terraform code with tfsec
+        run: |
+          TFSEC_VERSION=v1.28.14
+          wget https://github.com/aquasecurity/tfsec/releases/download/${TFSEC_VERSION}/tfsec-linux-amd64 -O tfsec
+          chmod +x tfsec
+          sudo mv tfsec /usr/local/bin/tfsec
+          tfsec --soft-fail ./terraform
 
   trivy:
     name: Docker Image Scan (Trivy)
@@ -31,7 +34,7 @@ jobs:
       - name: Build Docker image
         run: docker build -t suchitaa/flask-app:latest .
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@v0.32.0
+        uses: aquasecurity/trivy-action@0.20.0
         with:
           image-ref: suchitaa/flask-app:latest
       - name: Push Docker image

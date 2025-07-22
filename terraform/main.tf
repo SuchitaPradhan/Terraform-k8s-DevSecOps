@@ -27,6 +27,7 @@ module "eks" {
   subnet_ids      = module.vpc.private_subnets
 
   node_security_group_id = aws_security_group.eks_nodes.id
+  create_node_security_group = false
 
   eks_managed_node_group_defaults = {
     instance_types = ["t3.medium"]
