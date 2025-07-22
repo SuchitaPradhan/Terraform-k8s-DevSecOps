@@ -1,0 +1,59 @@
+name: DevSecOps CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  tfsec:
+    name: Terraform Security Scan (tfsec)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: ./terraform
+
+  trivy:
+    name: Docker Image Scan (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build Docker image
+        run: docker build -t suchitaa/flask-app:latest .
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@v0.16.0
+        with:
+          image-ref: suchitaa/flask-app:latest
+      - name: Push Docker image
+        run: docker push suchitaa/flask-app:latest
+
+  deploy:
+    name: Deploy to EKS
+    runs-on: ubuntu-latest
+    needs: [tfsec, trivy]
+    steps:
+      - uses: actions/checkout@v4
+
+      # Set up kubectl
+      - name: Set up Kubeconfig
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+          export KUBECONFIG=$PWD/kubeconfig
+
+      # Apply all SealedSecrets in the directory
+      - name: Apply SealedSecrets
+        run: kubectl apply -f k8s/sealed-secrets/
+
+      # Deploy workloads
+      - name: Deploy to Kubernetes
+        run: kubectl apply -f k8s/deployments/ 
