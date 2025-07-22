@@ -22,8 +22,10 @@ module "eks" {
   version         = "20.10.0"
   cluster_name    = "suchita-cluster"
   cluster_version = "1.29"
-  subnet_ids      = module.vpc.private_subnets
   vpc_id          = module.vpc.vpc_id
+  subnet_ids      = module.vpc.private_subnets
+
+  node_security_group_id = aws_security_group.eks_nodes.id
 
   eks_managed_node_group_defaults = {
     instance_types = ["t3.medium"]
@@ -64,13 +66,18 @@ module "eks" {
   cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 }
 
-resource "aws_security_group_rule" "restrict_node_egress" {
-  type              = "egress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
-  cidr_blocks       = ["10.0.0.0/16"] # Your VPC CIDR
-  security_group_id = module.eks.node_security_group_id
+resource "aws_security_group" "eks_nodes" {
+  name        = "eks-nodes-custom"
+  description = "Custom SG for EKS nodes with restricted egress"
+  vpc_id      = module.vpc.vpc_id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["10.0.0.0/16"] # Your VPC CIDR
+    description = "Allow egress within VPC only"
+  }
 }
 
 output "cluster_name" {
