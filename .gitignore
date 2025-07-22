@@ -1,0 +1,23 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# Sealed Secrets
+pub-cert.pem
+mysecret.yaml
+
+# Binaries
+kubeseal.exe
+
+# Python
+__pycache__/
+*.pyc
+
+# VSCode/PyCharm
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db 
